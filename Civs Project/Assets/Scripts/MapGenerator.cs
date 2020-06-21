@@ -18,9 +18,17 @@ public class MapGenerator : MonoBehaviour
     public int mapWidth;
     public int mapHeight;
 
-    // Terrain parameters
-    public float noiseScale;
+    public int seed;
+    public Vector2 offset;
 
+    // Terrain parameters
+    public float terrrainNoiseScale;
+    public int terrainOctaves;
+    [Range(0, 1)]
+    public float terrainPersistance;
+    public float terrainLacunarity;
+
+    // Automatically update the map when a parameter is changed in the editor
     public bool autoUpdate;
 
 
@@ -33,7 +41,7 @@ public class MapGenerator : MonoBehaviour
     {
         terrainTilemap.ClearAllTiles();
 
-        float[,] noiseMap = Noise.GenerateNoiseMap(mapWidth, mapHeight, noiseScale);
+        float[,] noiseMap = Noise.GenerateNoiseMap(mapWidth, mapHeight, seed, terrrainNoiseScale, terrainOctaves, terrainPersistance, terrainLacunarity, offset);
 
         for (int y = 0; y < mapHeight; y++)
         {
@@ -56,6 +64,26 @@ public class MapGenerator : MonoBehaviour
                     terrainTilemap.SetTile(new Vector3Int(x, y, 0), snow);
                 }
             }
+        }
+    }
+
+    private void OnValidate()
+    {
+        if (mapWidth < 1)
+        {
+            mapWidth = 1;
+        }
+        if (mapHeight < 1)
+        {
+            mapHeight = 1;
+        }
+        if (terrainOctaves < 0)
+        {
+            terrainOctaves = 0;
+        }
+        if (terrainLacunarity < 1)
+        {
+            terrainLacunarity = 1;
         }
     }
 }
