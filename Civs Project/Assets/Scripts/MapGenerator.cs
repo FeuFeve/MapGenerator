@@ -5,14 +5,22 @@ using UnityEngine.Tilemaps;
 
 public class MapGenerator : MonoBehaviour
 {
-    // Tilemap
+    // Tiles data
+    GameTile[,] gameTiles;
+
+    // Tilemaps
     public Tilemap terrainTilemap;
+    public Tilemap featuresTilemap;
 
     // Terrain tiles
-    public Tile water;
-    public Tile grass;
-    public Tile mountain;
-    public Tile snow;
+    public Tile[] oceanTiles;
+    public Tile[] coastalTiles;
+    public Tile[] grassTiles;
+    public Tile[] hillTiles;
+    public Tile[] mountainTiles;
+
+    // Feature tiles
+    public Tile[] forestTiles;
 
     // Map global parameters
     public int mapWidth;
@@ -23,10 +31,19 @@ public class MapGenerator : MonoBehaviour
 
     // Terrain parameters
     public float terrrainNoiseScale;
+    [Range(0, 8)]
     public int terrainOctaves;
     [Range(0, 1)]
     public float terrainPersistance;
     public float terrainLacunarity;
+
+    // Terrain parameters
+    public float featuresNoiseScale;
+    [Range(0, 8)]
+    public int featuresOctaves;
+    [Range(0, 1)]
+    public float featuresPersistance;
+    public float featuresLacunarity;
 
     // Automatically update the map when a parameter is changed in the editor
     public bool autoUpdate;
@@ -34,12 +51,17 @@ public class MapGenerator : MonoBehaviour
 
     public void GenerateMap()
     {
-        GenerateTerrain();
+        gameTiles = new GameTile[mapWidth, mapHeight];
+
+        GenerateTerrain(seed);
+        GenerateFeatures(seed + 1);
     }
 
-    public void GenerateTerrain()
+    public void GenerateTerrain(int seed)
     {
         terrainTilemap.ClearAllTiles();
+        
+        System.Random prng = new System.Random(seed);
 
         float[,] noiseMap = Noise.GenerateNoiseMap(mapWidth, mapHeight, seed, terrrainNoiseScale, terrainOctaves, terrainPersistance, terrainLacunarity, offset);
 
@@ -47,21 +69,53 @@ public class MapGenerator : MonoBehaviour
         {
             for (int x = 0; x < mapWidth; x++)
             {
-                if (noiseMap[x, y] < 0.4)
+                if (noiseMap[x, y] < 0.45)
                 {
-                    terrainTilemap.SetTile(new Vector3Int(x, y, 0), water);
+                    gameTiles[x, y] = new GameTile("ocean");
+                    terrainTilemap.SetTile(new Vector3Int(x, y, 0), oceanTiles[prng.Next(0, oceanTiles.Length)]);
                 }
-                else if (noiseMap[x, y] < 0.6)
+                else if (noiseMap[x, y] < 0.55)
                 {
-                    terrainTilemap.SetTile(new Vector3Int(x, y, 0), grass);
+                    gameTiles[x, y] = new GameTile("coast");
+                    terrainTilemap.SetTile(new Vector3Int(x, y, 0), coastalTiles[prng.Next(0, coastalTiles.Length)]);
                 }
-                else if (noiseMap[x, y] < 0.8)
+                else if (noiseMap[x, y] < 0.75)
                 {
-                    terrainTilemap.SetTile(new Vector3Int(x, y, 0), mountain);
+                    gameTiles[x, y] = new GameTile("grass");
+                    terrainTilemap.SetTile(new Vector3Int(x, y, 0), grassTiles[prng.Next(0, grassTiles.Length)]);
+                }
+                else if (noiseMap[x, y] < 0.85)
+                {
+                    gameTiles[x, y] = new GameTile("hill");
+                    terrainTilemap.SetTile(new Vector3Int(x, y, 0), hillTiles[prng.Next(0, hillTiles.Length)]);
                 }
                 else
                 {
-                    terrainTilemap.SetTile(new Vector3Int(x, y, 0), snow);
+                    gameTiles[x, y] = new GameTile("mountain");
+                    terrainTilemap.SetTile(new Vector3Int(x, y, 0), mountainTiles[prng.Next(0, mountainTiles.Length)]);
+                }
+            }
+        }
+    }
+
+    public void GenerateFeatures(int seed)
+    {
+        featuresTilemap.ClearAllTiles();
+
+        System.Random prng = new System.Random(seed);
+
+        float[,] noiseMap = Noise.GenerateNoiseMap(mapWidth, mapHeight, seed, featuresNoiseScale, featuresOctaves, featuresPersistance, featuresLacunarity, offset);
+
+        for (int y = 0; y < mapHeight; y++)
+        {
+            for (int x = 0; x < mapWidth; x++)
+            {
+                if (noiseMap[x, y] < 0.4)
+                {
+                    if (!gameTiles[x, y].isWater && !gameTiles[x, y].isImpassable)
+                    {
+                        featuresTilemap.SetTile(new Vector3Int(x, y, 0), forestTiles[prng.Next(0, forestTiles.Length)]);
+                    }
                 }
             }
         }
@@ -73,17 +127,27 @@ public class MapGenerator : MonoBehaviour
         {
             mapWidth = 1;
         }
+        if (mapWidth > 200)
+        {
+            mapWidth = 200;
+        }
+
         if (mapHeight < 1)
         {
             mapHeight = 1;
         }
-        if (terrainOctaves < 0)
+        if (mapHeight > 200)
         {
-            terrainOctaves = 0;
+            mapHeight = 200;
         }
+
         if (terrainLacunarity < 1)
         {
             terrainLacunarity = 1;
+        }
+        if (featuresLacunarity < 1)
+        {
+            featuresLacunarity = 1;
         }
     }
 }
