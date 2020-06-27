@@ -45,6 +45,20 @@ public class MapGenerator : MonoBehaviour
     public float featuresPersistance;
     public float featuresLacunarity;
 
+    // Terrain tiles type thresholds
+    [Range(0, 1)]
+    public float oceanThreshold;
+    [Range(0, 1)]
+    public float coastThreshold;
+    [Range(0, 1)]
+    public float plainThreshold;
+    [Range(0, 1)]
+    public float hillThreshold;
+
+    // Feature tiles type threshold
+    [Range(0, 1)]
+    public float forestThreshold;
+
     // Automatically update the map when a parameter is changed in the editor
     public bool autoUpdate;
 
@@ -69,22 +83,22 @@ public class MapGenerator : MonoBehaviour
         {
             for (int x = 0; x < mapWidth; x++)
             {
-                if (noiseMap[x, y] < 0.45)
+                if (noiseMap[x, y] < oceanThreshold)
                 {
                     gameTiles[x, y] = new GameTile("ocean");
                     terrainTilemap.SetTile(new Vector3Int(x, y, 0), oceanTiles[prng.Next(0, oceanTiles.Length)]);
                 }
-                else if (noiseMap[x, y] < 0.55)
+                else if (noiseMap[x, y] < coastThreshold)
                 {
                     gameTiles[x, y] = new GameTile("coast");
                     terrainTilemap.SetTile(new Vector3Int(x, y, 0), coastalTiles[prng.Next(0, coastalTiles.Length)]);
                 }
-                else if (noiseMap[x, y] < 0.75)
+                else if (noiseMap[x, y] < plainThreshold)
                 {
                     gameTiles[x, y] = new GameTile("grass");
                     terrainTilemap.SetTile(new Vector3Int(x, y, 0), grassTiles[prng.Next(0, grassTiles.Length)]);
                 }
-                else if (noiseMap[x, y] < 0.85)
+                else if (noiseMap[x, y] < hillThreshold)
                 {
                     gameTiles[x, y] = new GameTile("hill");
                     terrainTilemap.SetTile(new Vector3Int(x, y, 0), hillTiles[prng.Next(0, hillTiles.Length)]);
@@ -110,7 +124,7 @@ public class MapGenerator : MonoBehaviour
         {
             for (int x = 0; x < mapWidth; x++)
             {
-                if (noiseMap[x, y] < 0.4)
+                if (noiseMap[x, y] < forestThreshold)
                 {
                     if (!gameTiles[x, y].isWater && !gameTiles[x, y].isImpassable)
                     {
@@ -148,6 +162,19 @@ public class MapGenerator : MonoBehaviour
         if (featuresLacunarity < 1)
         {
             featuresLacunarity = 1;
+        }
+
+        if (coastThreshold < oceanThreshold)
+        {
+            coastThreshold = oceanThreshold;
+        }
+        if (plainThreshold < coastThreshold)
+        {
+            plainThreshold = coastThreshold;
+        }
+        if (hillThreshold < plainThreshold)
+        {
+            hillThreshold = plainThreshold;
         }
     }
 }
