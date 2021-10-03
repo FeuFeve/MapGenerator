@@ -1,2 +1,2 @@
 # Civs
-Civs is a game that aim to have the same mechanics as some of the Sid Meier's Civilization games.
+Formerly named "Civs" and aiming to imitate some of the mechanics of Sid Meier's Civilization games, this prototype was finally limited to procedural map generation.
